@@ -1,0 +1,15 @@
+{
+    "name": "egerstudios/markdowndocs-plugin",
+    "type": "october-plugin",
+    "description": "Display markdown files in the backend for documentation purposes",
+    "require": {
+        "composer/installers": "~1.0",
+        "erusev/parsedown": "^1.7",
+        "erusev/parsedown-extra": "^0.8.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    }
+}
