@@ -82,4 +82,18 @@ class Plugin extends PluginBase
             ],
         ];
     }
+
+    public function registerSettings()
+    {
+        return [
+            'settings' => [
+                'label' => 'Docs settings',
+                'description' => 'Manage docs based settings.',
+                'category' => 'Documentation',
+                'icon' => 'icon-cog',
+                'class' => \EgerStudios\MarkdownDocs\Models\Settings::class,
+            ]
+        ];
+    }
+
 }

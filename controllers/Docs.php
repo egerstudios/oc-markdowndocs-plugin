@@ -2,8 +2,10 @@
 
 use BackendMenu;
 use Backend\Classes\Controller;
+use EgerStudios\MarkdownDocs\Models\Settings;
 use Parsedown;
 use File;
+use Storage;
 use Yaml;
 
 
@@ -24,15 +26,16 @@ class Docs extends Controller
 
 
     private $docsPath;
+    private $settings;
     
 
     public function __construct()
     {
         parent::__construct();
-        
-        $this->docsPath = plugins_path('egerstudios/markdowndocs/docs/');
-        
 
+        $this->settings = Settings::instance();
+        $this->docsPath = $this->settings->storage_path ? Storage::path($this->settings->storage_path) : plugins_path('egerstudios/markdowndocs/docs/');
+        
         BackendMenu::setContext('EgerStudios.MarkdownDocs', 'markdowndocs', 'docs');
         
     }
