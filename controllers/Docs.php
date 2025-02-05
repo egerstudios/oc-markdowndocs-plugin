@@ -7,6 +7,7 @@ use Parsedown;
 use File;
 use Storage;
 use Yaml;
+use Log;
 
 
 /**
@@ -36,13 +37,14 @@ class Docs extends Controller
         $this->settings = Settings::instance();
         $this->docsPath = $this->settings->storage_path ? Storage::path($this->settings->storage_path) : plugins_path('egerstudios/markdowndocs/docs/');
         
+        $this->addCss('/plugins/egerstudios/markdowndocs/assets/css/docs.css');
         BackendMenu::setContext('EgerStudios.MarkdownDocs', 'markdowndocs', 'docs');
         
     }
 
     public function index()
     {
-        $this->pageTitle = 'Documentation';
+        $this->pageTitle = $this->settings->title ? $this->settings->title : 'Documentation';
 
         // Get list of Markdown files with metadata
         $files = $this->getMarkdownFilesWithMeta();
@@ -56,7 +58,9 @@ class Docs extends Controller
         $this->vars['content'] = $parsed['content'];
         $this->vars['meta'] = $parsed['meta'];
         $this->vars['selectedFile'] = $selectedFile;
+        $this->pageTitle = $this->vars['meta']['title'] . ' - ' . $this->pageTitle;
         $this->bodyClass = 'compact-container';
+
     }
 
     
@@ -81,26 +85,22 @@ class Docs extends Controller
         ];
     }
 
-    private function parseFileContent($content)
-    {
-        // Updated pattern to better match YAML front matter
-        $pattern = '/^\s*---([\s\S]*?)---\s*(.*)$/m';
+    private function parseFileContent($content) {
+        $pattern = '/^---[\r\n|\r|\n](.*?)[\r\n|\r|\n]---[\r\n|\r|\n](.*)/s';
         
         if (preg_match($pattern, $content, $matches)) {
             try {
-                // Parse the YAML section
                 $yamlString = trim($matches[1]);
                 $meta = Yaml::parse($yamlString);
                 $content = trim($matches[2]);
             } catch (\Exception $e) {
-                \Log::warning('YAML parsing failed: ' . $e->getMessage());
+                Log::warning('YAML parsing failed: ' . $e->getMessage());
                 $meta = [];
                 $content = $content;
             }
         } else {
-            // No front matter found, treat the whole thing as content
             $meta = [];
-            $content = $content;
+            $content = trim($content);
         }
 
         return [
@@ -115,13 +115,16 @@ class Docs extends Controller
         foreach (File::files($this->docsPath) as $path) {
             $filename = basename($path);
             $parsed = $this->parseMarkdownFile($filename);
-            $files[$filename] = $parsed['meta'];
+            $files[$filename] = [
+                'meta' => $parsed['meta'],
+                'content' => $parsed['content']
+            ];
         }
 
-        // Sort files based on position if specified in meta
+        // Sort files based on position from meta data
         uasort($files, function ($a, $b) {
-            $posA = $a['position'] ?? PHP_INT_MAX;
-            $posB = $b['position'] ?? PHP_INT_MAX;
+            $posA = isset($a['meta']['position']) ? (int)$a['meta']['position'] : PHP_INT_MAX;
+            $posB = isset($b['meta']['position']) ? (int)$b['meta']['position'] : PHP_INT_MAX;
             return $posA <=> $posB;
         });
 
@@ -131,6 +134,18 @@ class Docs extends Controller
     private function getMarkdownFiles()
     {
         return array_map('basename', File::files($this->docsPath));
+    }
+
+    public function onSelectFile()
+    {
+        $filename = post('file');
+        $parsed = $this->parseMarkdownFile($filename);
+        
+        return [
+            '#layout-body' => $this->makePartial('content', [
+                'content' => $parsed['content']
+            ])
+        ];
     }
 
 

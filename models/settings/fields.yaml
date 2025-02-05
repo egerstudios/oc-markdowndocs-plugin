@@ -3,6 +3,11 @@
 # ===================================
 
 fields:
+    title:
+        type: text
+        label: Title for documentation docs
+        default: Documentation
     storage_path:
         type: text
         label: Storage Path
+        comment: "Should end with trailing slash"
