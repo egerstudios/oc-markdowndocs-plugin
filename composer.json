@@ -11,5 +11,14 @@
         "allow-plugins": {
             "composer/installers": true
         }
-    }
+    },
+    "homepage": "https://github.com/egerstudios/oc-markdowndocs-plugin",
+    "keywords": ["october", "octobercms", "documentation", "markdown"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jan Tore Eger-Schøyen",
+            "email": "egerstudio.utvikling@gmail.com"
+        }
+    ]
 }

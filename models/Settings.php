@@ -10,9 +10,6 @@ use System\Models\SettingModel;
  */
 class Settings extends SettingModel
 {
-    
-
     public $settingsCode = 'egerstudios_markdowndocs_settings';
-
     public $settingsFields = 'fields.yaml';
 }

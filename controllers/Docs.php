@@ -26,10 +26,23 @@ class Docs extends Controller
     public $requiredPermissions = ['egerstudios.markdowndocs.docs'];
 
 
+    /**
+     * @var string Path to the documentation files
+     */
     private $docsPath;
+    
+    /**
+     * @var Settings Instance of the Settings model
+     */
     private $settings;
     
 
+    /**
+     * Constructor for the Docs controller
+     * 
+     * Initializes the controller, sets up the documentation path,
+     * adds CSS assets, and sets the backend menu context.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -42,6 +55,12 @@ class Docs extends Controller
         
     }
 
+    /**
+     * Index page action
+     * 
+     * Displays the documentation page with a list of available markdown files
+     * and renders the selected file's content.
+     */
     public function index()
     {
         $this->pageTitle = $this->settings->title ? $this->settings->title : 'Documentation';
@@ -64,8 +83,12 @@ class Docs extends Controller
     }
 
     
-
-
+    /**
+     * Parses a markdown file and returns its content and metadata
+     * 
+     * @param string $filename The name of the markdown file to parse
+     * @return array An array containing the parsed content and metadata
+     */
     private function parseMarkdownFile($filename)
     {
         $filePath = $this->docsPath . $filename;
@@ -85,6 +108,12 @@ class Docs extends Controller
         ];
     }
 
+    /**
+     * Parses the content of a markdown file to extract metadata and content
+     * 
+     * @param string $content The raw content of the markdown file
+     * @return array An array containing the metadata and content
+     */
     private function parseFileContent($content) {
         $pattern = '/^---[\r\n|\r|\n](.*?)[\r\n|\r|\n]---[\r\n|\r|\n](.*)/s';
         
@@ -109,6 +138,11 @@ class Docs extends Controller
         ];
     }
 
+    /**
+     * Gets all markdown files with their metadata
+     * 
+     * @return array An associative array of markdown files with their metadata and content
+     */
     private function getMarkdownFilesWithMeta()
     {
         $files = [];
@@ -131,11 +165,21 @@ class Docs extends Controller
         return $files;
     }
 
+    /**
+     * Gets a list of all markdown files in the docs directory
+     * 
+     * @return array An array of markdown filenames
+     */
     private function getMarkdownFiles()
     {
         return array_map('basename', File::files($this->docsPath));
     }
 
+    /**
+     * AJAX handler for selecting a file
+     * 
+     * @return array Partial view data for updating the content area
+     */
     public function onSelectFile()
     {
         $filename = post('file');
