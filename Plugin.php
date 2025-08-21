@@ -56,12 +56,10 @@ class Plugin extends PluginBase
      */
     public function registerPermissions()
     {
-        return []; // Remove this line to activate
-
         return [
-            'egerstudios.markdowndocs.some_permission' => [
+            'egerstudios.markdowndocs.docs' => [
                 'tab' => 'MarkdownDocs',
-                'label' => 'Some permission'
+                'label' => 'Access the documentation'
             ],
         ];
     }
