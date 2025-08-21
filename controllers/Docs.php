@@ -48,7 +48,16 @@ class Docs extends Controller
         parent::__construct();
 
         $this->settings = Settings::instance();
-        $this->docsPath = $this->settings->storage_path ? Storage::path($this->settings->storage_path) : plugins_path('egerstudios/markdowndocs/docs/');
+
+        // usage: in your plugin boot method
+        // Event::listen("markdowndocs.docspath", fn() => plugins_path('acme/blog/docs/'));
+        $externalDocsPath = Event::fire("markdowndocs.docspath", []);
+
+        if ($externalDocsPath && is_array($externalDocsPath)) {
+            $this->docsPath = $externalDocsPath[0];
+        } else {
+            $this->docsPath = $this->settings->storage_path ? Storage::path($this->settings->storage_path) : plugins_path('egerstudios/markdowndocs/docs/');
+        }        
         
         $this->addCss('/plugins/egerstudios/markdowndocs/assets/css/docs.css');
         BackendMenu::setContext('EgerStudios.MarkdownDocs', 'markdowndocs', 'docs');
