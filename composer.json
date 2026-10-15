@@ -5,7 +5,8 @@
     "require": {
         "composer/installers": "~1.0",
         "erusev/parsedown": "^1.7",
-        "erusev/parsedown-extra": "^0.8.1"
+        "erusev/parsedown-extra": "^0.8.1",
+        "scrivo/highlight.php": "^9.18"
     },
     "config": {
         "allow-plugins": {
@@ -13,7 +14,12 @@
         }
     },
     "homepage": "https://github.com/egerstudios/oc-markdowndocs-plugin",
-    "keywords": ["october", "octobercms", "documentation", "markdown"],
+    "keywords": [
+        "october",
+        "octobercms",
+        "documentation",
+        "markdown"
+    ],
     "license": "MIT",
     "authors": [
         {

@@ -1,3 +1,5 @@
 v1.0.1: First version of MarkdownDocs
 v1.0.2: Added support for custom storage path
 v1.0.3: Small fixes
+v1.0.4: Submenus (folders and parent key), per-page permissions, settings permission, path traversal and safe-mode markdown fixes
+v1.0.5: Search, table of contents, relative link/image rewriting, Parsedown Extra, code highlighting, caching, permission-gated editing

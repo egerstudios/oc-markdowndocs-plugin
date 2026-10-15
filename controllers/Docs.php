@@ -2,13 +2,17 @@
 
 use BackendMenu;
 use Backend\Classes\Controller;
+use EgerStudios\MarkdownDocs\Classes\DocTree;
 use EgerStudios\MarkdownDocs\Models\Settings;
-use Parsedown;
+use ApplicationException;
+use Backend;
+use BackendAuth;
+use Cache;
+use EgerStudios\MarkdownDocs\Classes\Renderer;
+use Event;
 use File;
+use Flash;
 use Storage;
-use Yaml;
-use Log;
-
 
 /**
  * Docs Backend Controller
@@ -19,30 +23,21 @@ class Docs extends Controller
 {
     public $implement = [];
 
-
     /**
      * @var array required permissions
      */
     public $requiredPermissions = ['egerstudios.markdowndocs.docs'];
 
-
     /**
      * @var string Path to the documentation files
      */
     private $docsPath;
-    
+
     /**
      * @var Settings Instance of the Settings model
      */
     private $settings;
-    
 
-    /**
-     * Constructor for the Docs controller
-     * 
-     * Initializes the controller, sets up the documentation path,
-     * adds CSS assets, and sets the backend menu context.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -51,158 +46,154 @@ class Docs extends Controller
 
         // usage: in your plugin boot method
         // Event::listen("markdowndocs.docspath", fn() => plugins_path('acme/blog/docs/'));
-        $externalDocsPath = Event::fire("markdowndocs.docspath", []);
+        $externalDocsPath = Event::fire('markdowndocs.docspath', []);
 
-        if ($externalDocsPath && is_array($externalDocsPath)) {
+        if ($externalDocsPath && is_array($externalDocsPath) && !empty($externalDocsPath[0])) {
             $this->docsPath = $externalDocsPath[0];
         } else {
-            $this->docsPath = $this->settings->storage_path ? Storage::path($this->settings->storage_path) : plugins_path('egerstudios/markdowndocs/docs/');
-        }        
-        
+            $this->docsPath = $this->settings->storage_path
+                ? Storage::path($this->settings->storage_path)
+                : plugins_path('egerstudios/markdowndocs/docs/');
+        }
+
         $this->addCss('/plugins/egerstudios/markdowndocs/assets/css/docs.css');
+        $this->addCss('/plugins/egerstudios/markdowndocs/assets/css/docs-nav.css');
         BackendMenu::setContext('EgerStudios.MarkdownDocs', 'markdowndocs', 'docs');
-        
     }
 
     /**
-     * Index page action
-     * 
-     * Displays the documentation page with a list of available markdown files
-     * and renders the selected file's content.
+     * Displays the sidebar tree and the selected page.
      */
     public function index()
     {
-        $this->pageTitle = $this->settings->title ? $this->settings->title : 'Documentation';
+        $title = $this->settings->title ?: 'Documentation';
 
-        // Get list of Markdown files with metadata
-        $files = $this->getMarkdownFilesWithMeta();
-        $this->vars['files'] = $files;
+        $docs = new DocTree($this->docsPath);
+        $tree = $docs->tree();
 
-        // Load the default file (first one) or the selected file
-        $selectedFile = input('file', array_key_first($files));
-        
-        $parsed = $this->parseMarkdownFile($selectedFile);
-        
-        $this->vars['content'] = $parsed['content'];
-        $this->vars['meta'] = $parsed['meta'];
-        $this->vars['selectedFile'] = $selectedFile;
-        $this->pageTitle = $this->vars['meta']['title'] . ' - ' . $this->pageTitle;
+        $selected = input('file') ?: DocTree::firstLink($tree);
+        $page = $this->loadPage($docs, $selected);
+
+        $this->vars['tree'] = $tree;
+        $this->vars['selectedFile'] = $selected;
+        $this->vars['openIds'] = $selected ? (DocTree::ancestors($tree, $selected) ?: []) : [];
+        $this->vars['content'] = $page['content'];
+        $this->vars['toc'] = $page['toc'];
+        $this->vars['meta'] = $page['meta'];
+        $this->vars['canEdit'] = $page['found'] && $this->canEdit($page['meta']);
+        $this->vars['editing'] = $this->vars['canEdit'] && input('edit');
+        $this->vars['source'] = $this->vars['editing'] ? File::get($docs->resolve($selected)) : '';
+        $this->pageTitle = ($page['meta']['title'] ?? null) ? $page['meta']['title'] . ' - ' . $title : $title;
         $this->bodyClass = 'compact-container';
-
     }
 
-    
     /**
-     * Parses a markdown file and returns its content and metadata
-     * 
-     * @param string $filename The name of the markdown file to parse
-     * @return array An array containing the parsed content and metadata
+     * Reads, permission-checks and renders one page (HTML is cached per
+     * file version).
      */
-    private function parseMarkdownFile($filename)
+    private function loadPage(DocTree $docs, ?string $id): array
     {
-        $filePath = $this->docsPath . $filename;
-        if (!File::exists($filePath)) {
-            return ['content' => '<p><strong>File not found.</strong></p>', 'meta' => []];
+        $path = $docs->resolve($id);
+        if (!$path) {
+            return $this->notice(__('File not found.'));
         }
 
-        $content = File::get($filePath);
-        
-        // Parse meta data and content
-        $parsed = $this->parseFileContent($content);
-        
-        $parsedown = new Parsedown();
-        return [
-            'content' => $parsedown->text($parsed['content']),
-            'meta' => $parsed['meta']
-        ];
-    }
+        $parsed = DocTree::parse(File::get($path));
 
-    /**
-     * Parses the content of a markdown file to extract metadata and content
-     * 
-     * @param string $content The raw content of the markdown file
-     * @return array An array containing the metadata and content
-     */
-    private function parseFileContent($content) {
-        $pattern = '/^---[\r\n|\r|\n](.*?)[\r\n|\r|\n]---[\r\n|\r|\n](.*)/s';
-        
-        if (preg_match($pattern, $content, $matches)) {
-            try {
-                $yamlString = trim($matches[1]);
-                $meta = Yaml::parse($yamlString);
-                $content = trim($matches[2]);
-            } catch (\Exception $e) {
-                Log::warning('YAML parsing failed: ' . $e->getMessage());
-                $meta = [];
-                $content = $content;
-            }
-        } else {
-            $meta = [];
-            $content = trim($content);
+        // Direct links must respect the same permissions as the sidebar.
+        if (!DocTree::canAccess($parsed['meta'])) {
+            return $this->notice(__('You do not have access to this page.'));
         }
 
-        return [
-            'meta' => $meta ?? [],
-            'content' => $content
-        ];
-    }
-
-    /**
-     * Gets all markdown files with their metadata
-     * 
-     * @return array An associative array of markdown files with their metadata and content
-     */
-    private function getMarkdownFilesWithMeta()
-    {
-        $files = [];
-        foreach (File::files($this->docsPath) as $path) {
-            $filename = basename($path);
-            $parsed = $this->parseMarkdownFile($filename);
-            $files[$filename] = [
-                'meta' => $parsed['meta'],
-                'content' => $parsed['content']
-            ];
-        }
-
-        // Sort files based on position from meta data
-        uasort($files, function ($a, $b) {
-            $posA = isset($a['meta']['position']) ? (int)$a['meta']['position'] : PHP_INT_MAX;
-            $posB = isset($b['meta']['position']) ? (int)$b['meta']['position'] : PHP_INT_MAX;
-            return $posA <=> $posB;
+        $key = 'egerstudios.markdowndocs.page.' . md5(Renderer::VERSION . $id . $path . filemtime($path) . filesize($path));
+        $rendered = Cache::remember($key, 86400, function () use ($id, $parsed) {
+            return (new Renderer($id))->render($parsed['content']);
         });
 
-        return $files;
+        return ['content' => $rendered['html'], 'toc' => $rendered['toc'], 'meta' => $parsed['meta'], 'found' => true];
+    }
+
+    private function notice(string $message): array
+    {
+        return ['content' => '<p><strong>' . e($message) . '</strong></p>', 'toc' => [], 'meta' => [], 'found' => false];
     }
 
     /**
-     * Gets a list of all markdown files in the docs directory
-     * 
-     * @return array An array of markdown filenames
+     * Editing needs the setting switched on, the edit permission, and
+     * access to the page itself.
      */
-    private function getMarkdownFiles()
+    private function canEdit(array $meta): bool
     {
-        return array_map('basename', File::files($this->docsPath));
+        $user = BackendAuth::getUser();
+        return $this->settings->allow_editing
+            && $user && $user->hasAccess('egerstudios.markdowndocs.edit')
+            && DocTree::canAccess($meta);
     }
 
     /**
-     * AJAX handler for selecting a file
-     * 
-     * @return array Partial view data for updating the content area
+     * AJAX: live search in the sidebar.
      */
-    public function onSelectFile()
+    public function onSearch()
     {
-        $filename = post('file');
-        $parsed = $this->parseMarkdownFile($filename);
-        
+        $docs = new DocTree($this->docsPath);
+        $query = trim((string) post('q'));
+
         return [
-            '#layout-body' => $this->makePartial('content', [
-                'content' => $parsed['content']
-            ])
+            '#docs-search-results' => $this->makePartial('search_results', [
+                'query' => $query,
+                'results' => mb_strlen($query) >= 2 ? $docs->search($query) : [],
+            ]),
         ];
     }
 
+    /**
+     * AJAX: save an edited page, then return to the rendered view.
+     */
+    public function onSave()
+    {
+        $docs = new DocTree($this->docsPath);
+        $id = post('file');
+        $path = $docs->resolve($id);
+        if (!$path) {
+            throw new ApplicationException(__('File not found.'));
+        }
 
-    
+        // Authorize against the page as it exists on disk, not the new text.
+        if (!$this->canEdit(DocTree::parse(File::get($path))['meta'])) {
+            throw new ApplicationException(__('You are not allowed to edit this page.'));
+        }
 
-    
+        $source = str_replace("\r\n", "\n", (string) post('source'));
+        if (strlen($source) > 1024 * 1024) {
+            throw new ApplicationException(__('The file is too large.'));
+        }
+        if (preg_match('/^---\R(.*?)\R---/s', $source, $m)) {
+            try {
+                \Yaml::parse(trim($m[1]));
+            } catch (\Exception $e) {
+                throw new ApplicationException(__('Invalid front matter: ') . $e->getMessage());
+            }
+        }
+
+        File::put($path, $source);
+        Flash::success(__('Page saved.'));
+
+        return Backend::redirect('egerstudios/markdowndocs/docs?file=' . rawurlencode($id));
+    }
+
+    /**
+     * Serves images referenced from markdown files (inside the docs folder only).
+     */
+    public function asset()
+    {
+        $path = (new DocTree($this->docsPath))->resolve(input('file'), Renderer::IMAGE_EXTS);
+        if (!$path) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        ]);
+    }
 }

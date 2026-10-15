@@ -11,3 +11,8 @@ fields:
         type: text
         label: Storage Path
         comment: "Should end with trailing slash"
+    allow_editing:
+        type: switch
+        label: Allow editing in the backend
+        comment: "Shows an Edit button to users with the 'Edit documentation pages' permission. Files must be writable by the web server."
+        default: false
