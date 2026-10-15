@@ -16,8 +16,8 @@ class Plugin extends PluginBase
     public function pluginDetails()
     {
         return [
-            'name' => 'MarkdownDocs',
-            'description' => 'Display markdown files as documentation in the backend.',
+            'name' => 'egerstudios.markdowndocs::lang.plugin.name',
+            'description' => 'egerstudios.markdowndocs::lang.plugin.description',
             'author' => 'EgerStudios',
             'icon' => 'icon-leaf'
         ];
@@ -58,16 +58,16 @@ class Plugin extends PluginBase
     {
         return [
             'egerstudios.markdowndocs.docs' => [
-                'tab' => 'MarkdownDocs',
-                'label' => 'Access the documentation'
+                'tab' => 'egerstudios.markdowndocs::lang.permissions.tab',
+                'label' => 'egerstudios.markdowndocs::lang.permissions.docs'
             ],
             'egerstudios.markdowndocs.edit' => [
-                'tab' => 'MarkdownDocs',
-                'label' => 'Edit documentation pages'
+                'tab' => 'egerstudios.markdowndocs::lang.permissions.tab',
+                'label' => 'egerstudios.markdowndocs::lang.permissions.edit'
             ],
             'egerstudios.markdowndocs.settings' => [
-                'tab' => 'MarkdownDocs',
-                'label' => 'Manage documentation settings'
+                'tab' => 'egerstudios.markdowndocs::lang.permissions.tab',
+                'label' => 'egerstudios.markdowndocs::lang.permissions.settings'
             ],
         ];
     }
@@ -80,7 +80,7 @@ class Plugin extends PluginBase
 
         return [
             'markdowndocs' => [
-                'label' => 'Docs',
+                'label' => 'egerstudios.markdowndocs::lang.nav.docs',
                 'url' => Backend::url('egerstudios/markdowndocs/docs'),
                 'icon' => 'icon-book',
                 'permissions' => ['egerstudios.markdowndocs.docs'],
@@ -93,9 +93,9 @@ class Plugin extends PluginBase
     {
         return [
             'settings' => [
-                'label' => 'Docs settings',
-                'description' => 'Manage docs based settings.',
-                'category' => 'Documentation',
+                'label' => 'egerstudios.markdowndocs::lang.settings.label',
+                'description' => 'egerstudios.markdowndocs::lang.settings.description',
+                'category' => 'egerstudios.markdowndocs::lang.settings.category',
                 'icon' => 'icon-cog',
                 'class' => \EgerStudios\MarkdownDocs\Models\Settings::class,
                 'permissions' => ['egerstudios.markdowndocs.settings'],

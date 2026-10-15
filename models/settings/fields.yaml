@@ -5,14 +5,13 @@
 fields:
     title:
         type: text
-        label: Title for documentation docs
-        default: Documentation
+        label: egerstudios.markdowndocs::lang.settings.title
     storage_path:
         type: text
-        label: Storage Path
-        comment: "Should end with trailing slash"
+        label: egerstudios.markdowndocs::lang.settings.storage_path
+        comment: egerstudios.markdowndocs::lang.settings.storage_path_comment
     allow_editing:
         type: switch
-        label: Allow editing in the backend
-        comment: "Shows an Edit button to users with the 'Edit documentation pages' permission. Files must be writable by the web server."
+        label: egerstudios.markdowndocs::lang.settings.allow_editing
+        comment: egerstudios.markdowndocs::lang.settings.allow_editing_comment
         default: false

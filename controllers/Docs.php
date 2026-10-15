@@ -66,7 +66,7 @@ class Docs extends Controller
      */
     public function index()
     {
-        $title = $this->settings->title ?: 'Documentation';
+        $title = $this->settings->title ?: __('egerstudios.markdowndocs::lang.default_title');
 
         $docs = new DocTree($this->docsPath);
         $tree = $docs->tree();
@@ -95,14 +95,14 @@ class Docs extends Controller
     {
         $path = $docs->resolve($id);
         if (!$path) {
-            return $this->notice(__('File not found.'));
+            return $this->notice(__('egerstudios.markdowndocs::lang.page.not_found'));
         }
 
         $parsed = DocTree::parse(File::get($path));
 
         // Direct links must respect the same permissions as the sidebar.
         if (!DocTree::canAccess($parsed['meta'])) {
-            return $this->notice(__('You do not have access to this page.'));
+            return $this->notice(__('egerstudios.markdowndocs::lang.page.no_access'));
         }
 
         $key = 'egerstudios.markdowndocs.page.' . md5(Renderer::VERSION . $id . $path . filemtime($path) . filesize($path));
@@ -155,28 +155,28 @@ class Docs extends Controller
         $id = post('file');
         $path = $docs->resolve($id);
         if (!$path) {
-            throw new ApplicationException(__('File not found.'));
+            throw new ApplicationException(__('egerstudios.markdowndocs::lang.page.not_found'));
         }
 
         // Authorize against the page as it exists on disk, not the new text.
         if (!$this->canEdit(DocTree::parse(File::get($path))['meta'])) {
-            throw new ApplicationException(__('You are not allowed to edit this page.'));
+            throw new ApplicationException(__('egerstudios.markdowndocs::lang.page.edit_forbidden'));
         }
 
         $source = str_replace("\r\n", "\n", (string) post('source'));
         if (strlen($source) > 1024 * 1024) {
-            throw new ApplicationException(__('The file is too large.'));
+            throw new ApplicationException(__('egerstudios.markdowndocs::lang.page.too_large'));
         }
         if (preg_match('/^---\R(.*?)\R---/s', $source, $m)) {
             try {
                 \Yaml::parse(trim($m[1]));
             } catch (\Exception $e) {
-                throw new ApplicationException(__('Invalid front matter: ') . $e->getMessage());
+                throw new ApplicationException(__('egerstudios.markdowndocs::lang.page.invalid_front_matter', ['message' => $e->getMessage()]));
             }
         }
 
         File::put($path, $source);
-        Flash::success(__('Page saved.'));
+        Flash::success(__('egerstudios.markdowndocs::lang.page.saved'));
 
         return Backend::redirect('egerstudios/markdowndocs/docs?file=' . rawurlencode($id));
     }

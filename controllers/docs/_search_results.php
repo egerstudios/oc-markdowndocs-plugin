@@ -2,7 +2,7 @@
 <?php if ($query !== ''): ?>
     <ul class="docs-search-list">
         <?php if (!$results): ?>
-            <li class="docs-search-empty"><?= e(mb_strlen($query) < 2 ? __('Type at least 2 characters') : __('No results')) ?></li>
+            <li class="docs-search-empty"><?= e(mb_strlen($query) < 2 ? __('egerstudios.markdowndocs::lang.search.min_chars') : __('egerstudios.markdowndocs::lang.search.no_results')) ?></li>
         <?php endif ?>
         <?php foreach ($results as $hit): ?>
             <li>

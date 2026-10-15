@@ -3,3 +3,4 @@ v1.0.2: Added support for custom storage path
 v1.0.3: Small fixes
 v1.0.4: Use the October markdown parser instead of Parsedown
 v1.0.5: Submenus, per-page permissions, search, table of contents, relative link/image rewriting, code highlighting, caching, permission-gated editing, security fixes
+v1.0.6: Norwegian (nb) and English translations, search fix

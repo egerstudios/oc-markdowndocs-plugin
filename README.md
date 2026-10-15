@@ -4,6 +4,9 @@ Using markdown files in a folder of your choice i in the storage folder you can 
 A simple yaml-section at the beginning of your markdown file contains the file metadata, and sets options for the sidebar display.
 
 
+#### Languages
+English (`en`) and Norwegian Bokmål (`nb`) are included in `lang/`. The backend language of each user decides which is shown. If the *Title* setting is empty, the translated default title is used.
+
 #### License
 The plugin is open-sourced software licensed under the MIT license same as OctoberCMS platform.
 
