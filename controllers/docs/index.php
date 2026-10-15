@@ -6,7 +6,6 @@
                     <input type="search" name="q" class="form-control form-control-sm" autocomplete="off"
                            placeholder="<?= e(__('Search docs…')) ?>"
                            data-request="onSearch"
-                           data-request-update="'search_results': '#docs-search-results'"
                            data-track-input="300">
                     <div id="docs-search-results"></div>
                 </div>

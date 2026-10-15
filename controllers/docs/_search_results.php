@@ -1,3 +1,4 @@
+<?php $query = $query ?? ''; $results = $results ?? []; ?>
 <?php if ($query !== ''): ?>
     <ul class="docs-search-list">
         <?php if (!$results): ?>
