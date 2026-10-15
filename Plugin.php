@@ -17,7 +17,7 @@ class Plugin extends PluginBase
     {
         return [
             'name' => 'MarkdownDocs',
-            'description' => 'No description provided yet...',
+            'description' => 'Display markdown files as documentation in the backend.',
             'author' => 'EgerStudios',
             'icon' => 'icon-leaf'
         ];
@@ -61,6 +61,14 @@ class Plugin extends PluginBase
                 'tab' => 'MarkdownDocs',
                 'label' => 'Access the documentation'
             ],
+            'egerstudios.markdowndocs.edit' => [
+                'tab' => 'MarkdownDocs',
+                'label' => 'Edit documentation pages'
+            ],
+            'egerstudios.markdowndocs.settings' => [
+                'tab' => 'MarkdownDocs',
+                'label' => 'Manage documentation settings'
+            ],
         ];
     }
 
@@ -75,7 +83,7 @@ class Plugin extends PluginBase
                 'label' => 'Docs',
                 'url' => Backend::url('egerstudios/markdowndocs/docs'),
                 'icon' => 'icon-book',
-                'permissions' => ['egerstudios.markdowndocs.*'],
+                'permissions' => ['egerstudios.markdowndocs.docs'],
                 'order' => 500,
             ],
         ];
@@ -90,6 +98,7 @@ class Plugin extends PluginBase
                 'category' => 'Documentation',
                 'icon' => 'icon-cog',
                 'class' => \EgerStudios\MarkdownDocs\Models\Settings::class,
+                'permissions' => ['egerstudios.markdowndocs.settings'],
             ]
         ];
     }

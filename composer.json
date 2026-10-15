@@ -3,7 +3,8 @@
     "type": "october-plugin",
     "description": "Display markdown files in the backend for documentation purposes",
     "require": {
-        "composer/installers": "~1.0"
+        "composer/installers": "~1.0",
+        "scrivo/highlight.php": "^9.18"
     },
     "config": {
         "allow-plugins": {
@@ -11,7 +12,12 @@
         }
     },
     "homepage": "https://github.com/egerstudios/oc-markdowndocs-plugin",
-    "keywords": ["october", "octobercms", "documentation", "markdown"],
+    "keywords": [
+        "october",
+        "octobercms",
+        "documentation",
+        "markdown"
+    ],
     "license": "MIT",
     "authors": [
         {
