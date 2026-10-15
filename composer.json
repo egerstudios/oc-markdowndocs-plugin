@@ -4,8 +4,6 @@
     "description": "Display markdown files in the backend for documentation purposes",
     "require": {
         "composer/installers": "~1.0",
-        "erusev/parsedown": "^1.7",
-        "erusev/parsedown-extra": "^0.8.1",
         "scrivo/highlight.php": "^9.18"
     },
     "config": {

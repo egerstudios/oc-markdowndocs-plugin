@@ -34,10 +34,10 @@ a folder without an `index.md` becomes a non-clickable group. `parent:` override
 - The sidebar search covers titles and page text, and only returns pages the user may view.
 - Each page shows an "On this page" list built from its `##`–`####` headings.
 - Relative links work: `[next](install.md)`, `[up](../index.md#intro)`, `![shot](img/screen.png)`. Images are served from the docs folder only.
-- Markdown is rendered with Parsedown Extra (tables, footnotes, definition lists) in safe mode (raw HTML is stripped).
+- Markdown is rendered with October's own Markdown parser in safe mode (raw HTML is stripped).
 
 #### Code highlighting
-Run `composer update` to install `scrivo/highlight.php`, then use fenced blocks with a language (` ```php `). Without the package, code is shown unhighlighted.
+Optional: run `composer update` to install `scrivo/highlight.php`, then use fenced blocks with a language (` ```php `). Without the package, code is shown unhighlighted.
 
 #### Editing
 1. Enable **Allow editing in the backend** in the plugin settings (the docs folder must be writable).

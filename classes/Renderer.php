@@ -1,17 +1,18 @@
 <?php namespace EgerStudios\MarkdownDocs\Classes;
 
 use Backend;
+use Markdown;
 use Str;
 
 /**
- * Renders a page's markdown to safe HTML and post-processes it:
+ * Renders a page's markdown (via October's Markdown parser) to safe HTML and post-processes it:
  * heading anchors + table of contents, relative link/image rewriting,
  * and server-side code highlighting (when scrivo/highlight.php is installed).
  */
 class Renderer
 {
     /** Bump to invalidate cached HTML after changing this class. */
-    const VERSION = 1;
+    const VERSION = 2;
 
     const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
 
@@ -28,10 +29,8 @@ class Renderer
      */
     public function render(string $markdown): array
     {
-        $parser = class_exists(\ParsedownExtra::class) ? new \ParsedownExtra() : new \Parsedown();
-        $parser->setSafeMode(true); // strips raw HTML/JS, unsafe URL schemes
-
-        $html = $parser->text($markdown);
+        // October's parser; the safe variant strips raw HTML/JS and unsafe URL schemes
+        $html = Markdown::parseSafe($markdown);
         $html = $this->headings($html);
         $html = $this->links($html);
         $html = $this->highlight($html);
