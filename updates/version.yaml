@@ -1,3 +1,4 @@
 v1.0.1: First version of MarkdownDocs
 v1.0.2: Added support for custom storage path
 v1.0.3: Small fixes
+v1.0.4: Use the October markdown parser instead of Parsedown

@@ -3,8 +3,9 @@
 use BackendMenu;
 use Backend\Classes\Controller;
 use EgerStudios\MarkdownDocs\Models\Settings;
-use Parsedown;
+use Markdown;
 use File;
+use Event;
 use Storage;
 use Yaml;
 use Log;
@@ -110,9 +111,8 @@ class Docs extends Controller
         // Parse meta data and content
         $parsed = $this->parseFileContent($content);
         
-        $parsedown = new Parsedown();
         return [
-            'content' => $parsedown->text($parsed['content']),
+            'content' => Markdown::parse($parsed['content']),
             'meta' => $parsed['meta']
         ];
     }
